@@ -14,7 +14,9 @@ HANDLE semLleno;    // semaforo que cuenta la cantidad de espacios con items en 
 // Utilizo una queue de int para el buffer, este es FIFO
 std::queue<int> buffer;
 
-//
+//Clase productora
+//DWORD es un tipo de dato de windows que se utiliza como INT, usamos esto en vez de int, porque el manejo de procesos concurrentes lo espera. Este tiene una mejor compatibilidad y consistencia que INT en windows
+//WINAPI es utilizado para procesos que van a correr en hilo de windows, tiene una serie de llamadas estandarizadas para llamadas del sistema de windows
 DWORD WINAPI Producer(LPVOID lpParam) {
   int item = 1;
   while (true) {
