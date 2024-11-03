@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1730657312 source:c:\users\santiago scarpa\documents\github\semaforotest\main.cpp
+	<windows.h>
+	<iostream>
+	<queue>
+
