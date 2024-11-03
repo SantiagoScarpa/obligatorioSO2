@@ -7,9 +7,9 @@
 #define BUFFER_SIZE 5 //defino el tama;o del buffer
 
 // HANDLE hace referencia a la utilizacion de objetos del kernel donde,
-HANDLE mutex;        // identifica el objeto de mutua exclusion
-HANDLE semVacio;    // semaforo que cuenta la cantidad de espacios vacios en el buffer
-HANDLE semLleno;    // semaforo que cuenta la cantidad de espacios con items en el buffer
+HANDLE mutex;        // identifica el objeto de mutua exclusion, se comporta como semaforo binario
+HANDLE semVacio;    // semaforo que cuenta la cantidad de espacios vacios en el buffer, se comporta como semaforo contador
+HANDLE semLleno;    // semaforo que cuenta la cantidad de espacios con items en el buffer, se comporta como semaforo contador
 
 // Utilizo una queue de int para el buffer, este es FIFO
 std::queue<int> buffer;
@@ -17,14 +17,17 @@ std::queue<int> buffer;
 //Clase productora
 //DWORD es un tipo de dato de windows que se utiliza como INT, usamos esto en vez de int, porque el manejo de procesos concurrentes lo espera. Este tiene una mejor compatibilidad y consistencia que INT en windows
 //WINAPI es utilizado para procesos que van a correr en hilo de windows, tiene una serie de llamadas estandarizadas para llamadas del sistema de windows
-DWORD WINAPI Producer(LPVOID lpParam) {
+//LPVOID, al igual que DWORD es un tipo de dato que es necesario para la programacion en hilos de windows, este es un puntero .
+DWORD WINAPI Productor(LPVOID lpParam) {
   int item = 1;
+  //Creo elementos mientras sea posible
   while (true) {
     // Produce un elemento
-    std::cout << "Productor: produciendo elemento " << item << std::endl;
-    Sleep(1000); // Simula tiempo de producción
+    cout << "Productor: produciendo elemento " << item <<endl;
+    Sleep(1000); // Simulo una espera para que sea legible en ejecucion
 
-    // Espera a que haya espacio en el buffer
+    // Es una funcion de windows.h que espera un objeto HANDLE el cual debe estar disponible, en este caso, el semaforo de vacia para marcar que hay espacio en el buffer
+    //el INFINITE hace referencia a cuandos milisegundos debe esperar por este semaforo, se pone infinite ya que no se desea que de time out
     WaitForSingleObject(semVacio, INFINITE);
 
     // Acceso exclusivo al buffer
@@ -40,7 +43,7 @@ DWORD WINAPI Producer(LPVOID lpParam) {
 
 
 // Función del consumidor
-DWORD WINAPI Consumer(LPVOID lpParam) {
+DWORD WINAPI Consumidor(LPVOID lpParam) {
   while (true) {
     // Espera a que haya un elemento en el buffer
     WaitForSingleObject(semLleno, INFINITE);
@@ -68,8 +71,8 @@ int main() {
   semLleno = CreateSemaphore(NULL, 0, BUFFER_SIZE, NULL);
 
   // Crea los hilos productor y consumidor
-  HANDLE hProducer = CreateThread(NULL, 0, Producer, NULL, 0, NULL);
-  HANDLE hConsumer = CreateThread(NULL, 0, Consumer, NULL, 0, NULL);
+  HANDLE hProducer = CreateThread(NULL, 0, Productor, NULL, 0, NULL);
+  HANDLE hConsumer = CreateThread(NULL, 0, Consumidor, NULL, 0, NULL);
 
   // Espera a que los hilos terminen (en este caso, nunca terminan)
   WaitForSingleObject(hProducer, INFINITE);
