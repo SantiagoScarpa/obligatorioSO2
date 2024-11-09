@@ -1,4 +1,3 @@
-
 #include <windows.h> //libreria para windows para la utilizacion de semaforos
 #include <iostream>
 #include <queue>//libreria para la utilizacion de la estructura de cola para el buffer (FIFO)
@@ -44,7 +43,9 @@ DWORD WINAPI Productor(LPVOID lpParam) {
     //hago el down(mutex), o sea valido que se puede acceder al buffer con el semaforo mutex o queda esperando infinito
     WaitForSingleObject(mutex, INFINITE);
     //le agrego un item+1 al buffer
-    buffer.push(item++);
+    buffer.push(item);
+    item++;
+
     //hago el up(mutex) para liberar el semaforo
     ReleaseMutex(mutex);
 
@@ -73,7 +74,7 @@ DWORD WINAPI Consumidor(LPVOID lpParam) {
     ReleaseMutex(mutex); //hago up(mutex) para marcar que esta disponible de nuevo
 
     // "Consumo" el elemeto que saque del buffer
-    std::cout << "Consumidor ID-"<<pid<<" : consumiendo elemento - " << item << std::endl;
+    cout << "Consumidor ID-"<<pid<<" : consumiendo elemento - " << item << endl;
     Sleep(msSleepCons); // Simulo espera para que sea legible lo que pasa en el programa
 
     // Hago un up(semVacio) para marcar que deje un espacio vacio en el buffer
@@ -83,7 +84,7 @@ DWORD WINAPI Consumidor(LPVOID lpParam) {
 }
 
 void ejecucionNormal(){
-    // Crea los hilos productor y consumidor para ejecutar concurrentemente (seria el parbegin / parend)
+  // Crea los hilos productor y consumidor para ejecutar concurrentemente (seria el parbegin / parend)
   HANDLE hiloProductor = CreateThread(NULL, 0, Productor, NULL, 0, NULL);
   HANDLE hiloConsumidor = CreateThread(NULL, 0, Consumidor, NULL, 0, NULL);
 
@@ -112,7 +113,6 @@ void testProcedure2_1(){
   CloseHandle(hiloProductor2);
   CloseHandle(hiloConsumidor);
 }
-
 
 //Test de 1 productor 0 consumidores
 void testProcedure1_0(){
@@ -167,8 +167,8 @@ void testProcedure2_2(){
 
 //Cambio tiempo de variables de sleep para Productor
 void testProcedureTiemposP(){
-  msSleepProd = 50;
-  msSleepCons = 1000;
+  msSleepProd = 500;
+  msSleepCons = 2000;
   HANDLE hiloProductor = CreateThread(NULL, 0, Productor, NULL, 0, NULL);
   HANDLE hiloConsumidor = CreateThread(NULL, 0, Consumidor, NULL, 0, NULL);
 
@@ -181,8 +181,8 @@ void testProcedureTiemposP(){
 
 //Cambio tiempo de variables de sleep para Consumidor
 void testProcedureTiemposC(){
-  msSleepProd = 1000;
-  msSleepCons = 50;
+  msSleepProd = 2000;
+  msSleepCons = 500;
   HANDLE hiloProductor = CreateThread(NULL, 0, Productor, NULL, 0, NULL);
   HANDLE hiloConsumidor = CreateThread(NULL, 0, Consumidor, NULL, 0, NULL);
 
@@ -221,7 +221,7 @@ int main() {
   //testProcedure2_2(); // 2 Prod 2 consu
 
   //testProcedureTiemposP(); //Productor mas rapido que consumidor
-  testProcedureTiemposC(); //Consumidor mas rapido que Productor
+  //testProcedureTiemposC(); //Consumidor mas rapido que Productor
 
   CloseHandle(mutex);
   CloseHandle(semVacio);
